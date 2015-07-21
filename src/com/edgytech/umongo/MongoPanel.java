@@ -56,7 +56,6 @@ public class MongoPanel extends BasePanel implements EnumListener<Item> {
         close,
         createDB,
         createDbName,
-        authenticate,
         authUser,
         authPassword,
         maxObjectSize,
@@ -183,45 +182,6 @@ public class MongoPanel extends BasePanel implements EnumListener<Item> {
                 getMongoNode().structureComponent();
             }
         }.addJob();
-    }
-
-    public void authenticate(final ButtonBase button) {
-        final MongoClient mongo = getMongoNode().getMongoClient();
-        final String user = getStringFieldValue(Item.authUser);
-        final String passwd = getStringFieldValue(Item.authPassword);
-
-        new DbJob() {
-            @Override
-            public Object doRun() throws IOException {
-                mongo.getDB("admin").authenticateCommand(user, passwd.toCharArray());
-                return null;
-            }
-
-            @Override
-            public String getNS() {
-                return "Mongo";
-            }
-
-            @Override
-            public String getShortName() {
-                return "Auth";
-            }
-
-            @Override
-            public void wrapUp(Object res) {
-                super.wrapUp(res);
-                if (res == null) {
-                    // need to refresh tree
-                    refresh();
-                }
-            }
-
-            @Override
-            public ButtonBase getButton() {
-                return button;
-            }
-        }.addJob();
-
     }
 
     public void serverStatus(ButtonBase button) {

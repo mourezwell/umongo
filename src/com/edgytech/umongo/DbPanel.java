@@ -76,7 +76,6 @@ public class DbPanel extends BasePanel implements EnumListener<Item> {
         evalNoLock,
         dbHash,
         readWriteOptions,
-        authenticate,
         authUser,
         authPassword,
         manageUsers,
@@ -365,47 +364,6 @@ public class DbPanel extends BasePanel implements EnumListener<Item> {
         db.setWriteConcern(od.getWriteConcern());
         db.setReadPreference(od.getReadPreference());
         refresh();
-    }
-
-    public void authenticate(final ButtonBase button) {
-        final DbNode dbNode = getDbNode();
-        final DB db = dbNode.getDb();
-        final String user = getStringFieldValue(Item.authUser);
-        final String pass = getStringFieldValue(Item.authPassword);
-        new DbJob() {
-
-            @Override
-            public Object doRun() {
-                db.authenticateCommand(user, pass.toCharArray());
-                return null;
-            }
-
-            @Override
-            public String getNS() {
-                return db.getName();
-            }
-
-            @Override
-            public String getShortName() {
-                return "Auth";
-            }
-
-            @Override
-            public void wrapUp(Object res) {
-                super.wrapUp(res);
-                if (dbNode.getDb().getName().equals("admin")) {
-                    // now we can list dbs, refresh whole mongo
-                    dbNode.getMongoNode().structureComponent();
-                } else {
-                    dbNode.structureComponent();
-                }
-            }
-
-            @Override
-            public ButtonBase getButton() {
-                return button;
-            }
-        }.addJob();
     }
 
     void refreshUserList() {

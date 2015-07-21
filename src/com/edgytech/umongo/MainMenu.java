@@ -23,6 +23,7 @@ import java.util.List;
 import com.edgytech.umongo.MainMenu.Item;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
+import com.mongodb.MongoCredential;
 import com.mongodb.MongoURI;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -179,34 +180,37 @@ public class MainMenu extends MenuBar implements EnumListener<Item> {
                         addrs.add(new ServerAddress(tmp[0]));
                     }
                 }
-                if ("Direct".equals(dialog.getStringFieldValue(ConnectDialog.Item.connectionMode)))
-                    mongo = new MongoClient(addrs.get(0), dialog.getMongoClientOptions());
-                else
-                    mongo = new MongoClient(addrs, dialog.getMongoClientOptions());
-
+                
                 String sdbs = dialog.getStringFieldValue(ConnectDialog.Item.databases);
                 if (!sdbs.trim().isEmpty()) {
                     for (String db : sdbs.split(",")) {
                         dbs.add(db.trim());
                     }
                 }
+
+                List<MongoCredential> lCreds = new ArrayList<MongoCredential>();
+                String user = dialog.getStringFieldValue(ConnectDialog.Item.user).trim();
+                String password = dialog.getStringFieldValue(ConnectDialog.Item.password);
+                if (!user.isEmpty()) {
+                    // authenticate against all dbs
+                    if (!dbs.isEmpty()) {
+                        for (String db : dbs) {
+                        	lCreds.add(MongoCredential.createCredential(user, db, password.toCharArray()));
+                        }
+                    } else {
+                    	lCreds.add(MongoCredential.createCredential(user, "admin", password.toCharArray()));
+                    }
+                }
+
+                if ("Direct".equals(dialog.getStringFieldValue(ConnectDialog.Item.connectionMode)))
+                    mongo = new MongoClient(addrs.get(0), lCreds, dialog.getMongoClientOptions());
+                else
+                    mongo = new MongoClient(addrs, lCreds, dialog.getMongoClientOptions());
+
             }
 
             if (dbs.size() == 0) {
                 dbs = null;
-            }
-
-            String user = dialog.getStringFieldValue(ConnectDialog.Item.user).trim();
-            String password = dialog.getStringFieldValue(ConnectDialog.Item.password);
-            if (!user.isEmpty()) {
-                // authenticate against all dbs
-                if (dbs != null) {
-                    for (String db : dbs) {
-                        mongo.getDB(db).authenticate(user, password.toCharArray());
-                    }
-                } else {
-                    mongo.getDB("admin").authenticate(user, password.toCharArray());
-                }
             }
 
             final MongoClient fmongo = mongo;
