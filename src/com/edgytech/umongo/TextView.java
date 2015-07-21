@@ -67,12 +67,6 @@ public class TextView extends Zone implements EnumListener, TabInterface, Runnab
 
     /**
      * create a doc view with static document
-     *
-     * @param id
-     * @param label
-     * @param job
-     * @param root
-     * @param doc
      */
     public TextView(String id, String label, DbJob job, String text) {
         this(id, label, job);
